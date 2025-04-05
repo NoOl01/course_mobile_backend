@@ -2,11 +2,11 @@ package db_models
 
 type User struct {
 	Id          int64  `gorm:"primary_key;auto_increment" json:"user_id,omitempty"`
-	FirstName   string `gorm:"size:255;not null" json:"first_name,omitempty"`
-	LastName    string `gorm:"size:255;not null" json:"last_name,omitempty"`
+	FirstName   string `gorm:"size:255" json:"first_name,omitempty"`
+	LastName    string `gorm:"size:255" json:"last_name,omitempty"`
 	Email       string `gorm:"size:255;not null" json:"email,omitempty"`
-	Address     string `gorm:"size:255;not null" json:"address,omitempty"`
-	PhoneNumber string `gorm:"size:255;not null" json:"phone_number,omitempty"`
+	Address     string `gorm:"size:255" json:"address,omitempty"`
+	PhoneNumber string `gorm:"size:255" json:"phone_number,omitempty"`
 	Password    string `gorm:"size:255;not null" json:"password,omitempty"`
 }
 

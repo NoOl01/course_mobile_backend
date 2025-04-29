@@ -25,6 +25,21 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 
 			product.GET("/getAll", productController.GetAllProducts)
 			product.GET("/getByCategoryId", productController.GetProductByCategoryId)
+			product.GET("/getById", productController.GetProductInfoById)
+		}
+		order := api.Group("/order")
+		{
+			orderController := controllers.OrderController{Db: db}
+
+			order.GET("/getAll", orderController.GetAllOrders)
+		}
+		cart := api.Group("/cart")
+		{
+			cartController := controllers.CartController{Db: db}
+
+			cart.GET("/getAll", cartController.GetAllCart)
+			cart.POST("/add", cartController.AddToCart)
+			cart.POST("/delete", cartController.DeleteFromCart)
 		}
 	}
 }

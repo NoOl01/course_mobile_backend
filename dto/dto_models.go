@@ -32,3 +32,7 @@ type ProfileDto struct {
 	BankRequisites *string `json:"bank_requisites,omitempty"`
 	Email          *string `json:"email,omitempty"`
 }
+
+type CartDto struct {
+	ProductId int64 `json:"product_id"`
+}

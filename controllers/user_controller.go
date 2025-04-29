@@ -222,21 +222,5 @@ func (dbc *UserController) ResetPassword(c *gin.Context) {
 }
 
 func (dbc *UserController) UpdateProfile(c *gin.Context) {
-	authKey := c.GetHeader("Authorization")
-	if authKey == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "unauthorized",
-		})
-		return
-	}
-
-	var profile dto.ProfileDto
-
-	if err := c.ShouldBind(&profile); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
 
 }

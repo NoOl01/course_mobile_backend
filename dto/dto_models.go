@@ -35,4 +35,10 @@ type ProfileDto struct {
 
 type CartDto struct {
 	ProductId int64 `json:"product_id"`
+	Count     int   `json:"count"`
+}
+
+type BuyProductDto struct {
+	ProductId int64 `json:"product_id"`
+	Count     int   `json:"count"`
 }

@@ -33,6 +33,7 @@ func (dbc *UserController) Register(c *gin.Context) {
 		FirstName: newUser.FirstName,
 		Email:     newUser.Email,
 		Password:  hash,
+		Balance:   0,
 	}
 
 	access, refresh, err := common.GenerateToken(user)

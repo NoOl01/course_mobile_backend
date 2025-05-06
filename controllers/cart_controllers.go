@@ -97,10 +97,13 @@ func (dbc *CartController) AddToCart(c *gin.Context) {
 	var cart = database.Cart{
 		UserId:    id,
 		ProductId: cartDto.ProductId,
+		Count:     cartDto.Count,
 	}
 
 	if err := dbc.Db.Create(&cart).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"error": nil,

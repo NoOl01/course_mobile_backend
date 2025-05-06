@@ -5,17 +5,17 @@ import (
 )
 
 type User struct {
-	Id             int64          `gorm:"primary_key;auto_increment" json:"id,omitempty"`
-	FirstName      string         `gorm:"size:255;not null" json:"first_name,omitempty"`
-	LastName       string         `gorm:"size:255" json:"last_name,omitempty"`
-	Avatar         string         `gorm:"not null" json:"avatar,omitempty"`
-	Address        string         `gorm:"size:255" json:"address,omitempty"`
-	BankRequisites string         `json:"bank_requisites,omitempty"`
-	Email          string         `gorm:"size:255;not null" json:"email,omitempty"`
-	Password       string         `gorm:"size:255;not null" json:"password,omitempty"`
-	Cards          []Cart         `gorm:"foreignKey:UserId" json:"user,omitempty"`
-	Orders         []Order        `gorm:"foreignKey:UserId" json:"orders,omitempty"`
-	Notifications  []Notification `gorm:"foreignKey:UserId" json:"notifications,omitempty"`
+	Id            int64          `gorm:"primary_key;auto_increment" json:"id,omitempty"`
+	FirstName     string         `gorm:"size:255;not null" json:"first_name,omitempty"`
+	LastName      string         `gorm:"size:255" json:"last_name,omitempty"`
+	Avatar        string         `gorm:"not null" json:"avatar,omitempty"`
+	Address       string         `gorm:"size:255" json:"address,omitempty"`
+	Balance       int64          `json:"bank_requisites,omitempty"`
+	Email         string         `gorm:"size:255;not null" json:"email,omitempty"`
+	Password      string         `gorm:"size:255;not null" json:"password,omitempty"`
+	Cards         []Cart         `gorm:"foreignKey:UserId" json:"user,omitempty"`
+	Orders        []Order        `gorm:"foreignKey:UserId" json:"orders,omitempty"`
+	Notifications []Notification `gorm:"foreignKey:UserId" json:"notifications,omitempty"`
 }
 
 type Category struct {
@@ -44,6 +44,7 @@ type Cart struct {
 	User      User    `gorm:"foreignKey:UserId" json:"user,omitempty"`
 	ProductId int64   `gorm:"not null" json:"product_id,omitempty"`
 	Product   Product `gorm:"foreignKey:ProductId" json:"product,omitempty"`
+	Count     int     `gorm:"not null" json:"count,omitempty"`
 }
 
 type Order struct {
@@ -52,6 +53,8 @@ type Order struct {
 	User      User      `gorm:"foreignKey:UserId" json:"user,omitempty"`
 	ProductId int64     `gorm:"not null" json:"product_id,omitempty"`
 	Product   Product   `gorm:"foreignKey:ProductId" json:"product,omitempty"`
+	Count     int       `gorm:"not null" json:"count,omitempty"`
+	Status    string    `gorm:"not null" json:"status,omitempty"`
 	Time      time.Time `gorm:"not null" json:"time,omitempty"`
 }
 

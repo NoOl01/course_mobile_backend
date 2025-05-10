@@ -5,21 +5,21 @@ import (
 	"time"
 )
 
-var OtpStore = make(map[string]int)
+var Store = make(map[string]int)
 
 func StoreOTP(email string, otp int) {
-	OtpStore[email] = otp
+	Store[email] = otp
 	go func() {
 		time.Sleep(2 * time.Minute)
-		delete(OtpStore, email)
+		delete(Store, email)
 	}()
 }
 
 func VerifyOTP(email string, otp int) bool {
-	storedCode, exists := OtpStore[email]
+	storedCode, exists := Store[email]
 	return exists && storedCode == otp
 }
 
-func OtpGenerate() int {
+func Generate() int {
 	return rand.Intn(1000000)
 }

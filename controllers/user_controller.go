@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type UserController struct {
@@ -36,7 +38,7 @@ func (dbc *UserController) Register(c *gin.Context) {
 		Balance:   0,
 	}
 
-	access, refresh, err := common.GenerateToken(user)
+	access, refresh, err := common.GenerateToken(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"result": nil,
@@ -90,7 +92,7 @@ func (dbc *UserController) Login(c *gin.Context) {
 		}
 	}
 
-	access, refresh, err := common.GenerateToken(*user)
+	access, refresh, err := common.GenerateToken(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"result": nil,
@@ -99,6 +101,58 @@ func (dbc *UserController) Login(c *gin.Context) {
 		return
 	}
 
+	c.JSON(http.StatusOK, gin.H{
+		"result": gin.H{
+			"access_token":  access,
+			"refresh_token": refresh,
+		},
+		"error": nil,
+	})
+}
+
+func (dbc *UserController) RefreshToken(c *gin.Context) {
+	refreshToken := c.GetHeader("X-Refresh-Token")
+	if refreshToken == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "No Refresh token found",
+		})
+		return
+	}
+
+	tokenData := strings.Split(refreshToken, " ")
+	if tokenData[0] != "Refresh" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "Invalid Refresh token",
+		})
+		return
+	}
+
+	claims, err := common.DecodeToken(tokenData[1])
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+	id, err := strconv.ParseInt(common.GetIdFromToken(claims), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
+	access, refresh, err := common.Refresh(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"result": gin.H{
 			"access_token":  access,
@@ -133,7 +187,7 @@ func (dbc *UserController) SendPasswordResetCode(c *gin.Context) {
 		return
 	}
 
-	otpCode := otp.OtpGenerate()
+	otpCode := otp.Generate()
 	otp.StoreOTP(sendOtp.Email, otpCode)
 	err = otp.SendOtp(sendOtp.Email, otpCode)
 	if err != nil {

@@ -10,7 +10,7 @@ type User struct {
 	LastName      string         `gorm:"size:255" json:"last_name,omitempty"`
 	Avatar        string         `gorm:"not null" json:"avatar,omitempty"`
 	Address       string         `gorm:"size:255" json:"address,omitempty"`
-	Balance       int64          `json:"bank_requisites,omitempty"`
+	Balance       float64        `json:"bank_requisites,omitempty"`
 	Email         string         `gorm:"size:255;not null" json:"email,omitempty"`
 	Password      string         `gorm:"size:255;not null" json:"password,omitempty"`
 	Cards         []Cart         `gorm:"foreignKey:UserId" json:"user,omitempty"`

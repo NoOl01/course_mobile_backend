@@ -2,52 +2,39 @@ package common
 
 import (
 	"backend_course/database"
+	"backend_course/statuses"
 	"errors"
 	"gorm.io/gorm"
 )
 
-var (
-	userNotFound        = errors.New("user not found")
-	productNotFound     = "product not found"
-	insufficientBalance = "user balance is insufficient"
-)
-
-func TryTransaction(db *gorm.DB, id, productId int64, product database.Product, order database.Order) error {
-	var user database.User
-
-	if err := checkTransaction(db, id, productId, &user, &product); err != nil {
-		if errors.Is(err, productNotFound) {
-			return err
+func TryTransaction(db *gorm.DB, id, productId int64, product *database.Product, user *database.User) (string, error) {
+	if err := checkTransaction(db, id, productId, user, product); err != nil {
+		if errors.Is(err, statuses.InsufficientBalance) {
+			return statuses.ResultAwaitingPayment, nil
 		}
 
-		if err := db.Model(&user).Where("id = ?", id).Update("balance", float64(user.Balance)-product.Price).Error; err != nil {
-			return err
-		}
-		order.Status = ""
-		if err := db.Create(&order).Error; err != nil {
-			return err
-		}
+		return "", err
 	}
 
-	return nil
+	return statuses.ResultOk, nil
 }
 
 func checkTransaction(db *gorm.DB, id, productId int64, user *database.User, product *database.Product) error {
-	if err := db.Model(&user).Where("id = ?", id).First(&user).Error; err != nil {
+	if err := db.Where("id = ?", id).First(user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return userNotFound
+			return statuses.UserNotFound
 		}
 		return err
 	}
-	if err := db.Model(&product).Where("id = ?", productId).First(&user).Error; err != nil {
+	if err := db.Where("id = ?", productId).First(product).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New(productNotFound)
+			return statuses.ProductNotFound
 		}
 		return err
 	}
 
-	if float64(user.Balance) < product.Price {
-		return errors.New(insufficientBalance)
+	if user.Balance < product.Price {
+		return statuses.InsufficientBalance
 	}
 
 	return nil

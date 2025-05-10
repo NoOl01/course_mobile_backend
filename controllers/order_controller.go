@@ -4,6 +4,7 @@ import (
 	"backend_course/common"
 	"backend_course/database"
 	"backend_course/dto"
+	"backend_course/statuses"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -66,7 +67,8 @@ func (dbc *OrderController) BuyProduct(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "No Authorization Header found",
+			"result": nil,
+			"error":  "No Authorization Header found",
 		})
 		return
 	}
@@ -74,7 +76,8 @@ func (dbc *OrderController) BuyProduct(c *gin.Context) {
 
 	if err := c.ShouldBind(&buyProductDto); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"result": nil,
+			"error":  err.Error(),
 		})
 		return
 	}
@@ -83,7 +86,8 @@ func (dbc *OrderController) BuyProduct(c *gin.Context) {
 	claims, err := common.DecodeToken(token)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": err.Error(),
+			"result": nil,
+			"error":  err.Error(),
 		})
 		return
 	}
@@ -91,7 +95,26 @@ func (dbc *OrderController) BuyProduct(c *gin.Context) {
 	id, err := strconv.ParseInt(common.GetIdFromToken(claims), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "invalid token",
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
+
+	var product database.Product
+	var user database.User
+	status, err := common.TryTransaction(dbc.Db, id, buyProductDto.ProductId, &product, &user)
+	if err != nil {
+		if errors.Is(err, statuses.UserNotFound) || errors.Is(err, statuses.ProductNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"result": nil,
+				"error":  err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"result": nil,
+			"error":  err.Error(),
 		})
 		return
 	}
@@ -100,7 +123,47 @@ func (dbc *OrderController) BuyProduct(c *gin.Context) {
 		UserId:    id,
 		ProductId: buyProductDto.ProductId,
 		Count:     buyProductDto.Count,
-		Status:    "",
 		Time:      time.Now(),
 	}
+
+	switch status {
+	case statuses.ResultAwaitingPayment:
+		order.Status = statuses.ResultAwaitingPayment
+
+		if err := dbc.createOrder(&order); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"result": nil,
+				"error":  err.Error(),
+			})
+		}
+	case statuses.ResultOk:
+		order.Status = statuses.ResultOk
+
+		if err := dbc.Db.Model(&user).Where("id = ?", id).Update("Balance", user.Balance-product.Price).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"result": nil,
+				"error":  err.Error(),
+			})
+			return
+		}
+
+		if err := dbc.createOrder(&order); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"result": nil,
+				"error":  err.Error(),
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": order,
+		"error":  nil,
+	})
+}
+
+func (dbc *OrderController) createOrder(order *database.Order) error {
+	if err := dbc.Db.Create(order).Error; err != nil {
+		return err
+	}
+	return nil
 }

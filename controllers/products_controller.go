@@ -12,7 +12,6 @@ type ProductController struct {
 	Db *gorm.DB
 }
 
-// GetAllProducts GET
 func (dbc *ProductController) GetAllProducts(c *gin.Context) {
 	var products []database.Product
 
@@ -30,7 +29,6 @@ func (dbc *ProductController) GetAllProducts(c *gin.Context) {
 	})
 }
 
-// GetProductByCategoryId GET
 func (dbc *ProductController) GetProductByCategoryId(c *gin.Context) {
 	var product []database.Product
 
@@ -57,7 +55,6 @@ func (dbc *ProductController) GetProductByCategoryId(c *gin.Context) {
 	})
 }
 
-// GetProductInfoById GET
 func (dbc *ProductController) GetProductInfoById(c *gin.Context) {
 	var product database.Product
 	productId := c.Query("product_id")

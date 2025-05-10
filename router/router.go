@@ -15,9 +15,11 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 
 			user.POST("/register", userController.Register)
 			user.POST("/login", userController.Login)
+			user.POST("/refresh", userController.RefreshToken)
 			user.POST("/sendOtp", userController.SendPasswordResetCode)
 			user.POST("/checkOtp", userController.OtpCheck)
 			user.POST("/resetPassword", userController.ResetPassword)
+			user.POST("/updateProfile", userController.UpdateProfile)
 		}
 		product := api.Group("/product")
 		{
@@ -32,6 +34,13 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 			orderController := controllers.OrderController{Db: db}
 
 			order.GET("/getAll", orderController.GetAllOrders)
+			order.POST("/buy", orderController.BuyProduct)
+		}
+		category := api.Group("category")
+		{
+			categoryController := controllers.CategoryController{Db: db}
+
+			category.GET("/getAll", categoryController.GetAllCategories)
 		}
 		cart := api.Group("/cart")
 		{

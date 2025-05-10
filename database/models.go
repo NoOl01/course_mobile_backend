@@ -25,17 +25,24 @@ type Category struct {
 }
 
 type Product struct {
-	Id          int64    `gorm:"primary_key;auto_increment" json:"id,omitempty"`
-	Name        string   `gorm:"size:255;not null" json:"name,omitempty"`
-	Description string   `gorm:"size:255;not null" json:"description,omitempty"`
-	Images      []string `gorm:"not null" json:"images,omitempty"`
-	Size        int      `gorm:"not null" json:"size,omitempty"`
-	Season      string   `gorm:"size:255;not null" json:"season,omitempty"`
-	Price       float64  `gorm:"not null" json:"price,omitempty"`
-	CategoryId  int64    `gorm:"not null" json:"category_id,omitempty"`
-	Category    Category `gorm:"foreignKey:CategoryId" json:"-"`
-	Cards       []Cart   `gorm:"foreignKey:ProductId" json:"product,omitempty"`
-	Orders      []Order  `gorm:"foreignKey:ProductId" json:"order,omitempty"`
+	Id          int64          `gorm:"primary_key;auto_increment" json:"id,omitempty"`
+	Name        string         `gorm:"size:255;not null" json:"name,omitempty"`
+	Description string         `gorm:"size:255;not null" json:"description,omitempty"`
+	Size        int            `gorm:"not null" json:"size,omitempty"`
+	Season      string         `gorm:"size:255;not null" json:"season,omitempty"`
+	Price       float64        `gorm:"not null" json:"price,omitempty"`
+	CategoryId  int64          `gorm:"not null" json:"category_id,omitempty"`
+	Category    Category       `gorm:"foreignKey:CategoryId" json:"-"`
+	Images      []ProductImage `gorm:"foreignKey:ProductId" json:"images,omitempty"`
+	Carts       []Cart         `gorm:"foreignKey:ProductId" json:"product,omitempty"`
+	Orders      []Order        `gorm:"foreignKey:ProductId" json:"order,omitempty"`
+}
+
+type ProductImage struct {
+	Id        int64   `gorm:"primary_key;auto_increment" json:"id,omitempty"`
+	ProductId int64   `gorm:"not null" json:"product_id,omitempty"`
+	Product   Product `gorm:"foreignKey:ProductId" json:"product,omitempty"`
+	FilePath  string  `gorm:"size:255;not null" json:"file_path,omitempty"`
 }
 
 type Cart struct {

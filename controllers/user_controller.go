@@ -164,7 +164,7 @@ func (dbc *UserController) RefreshToken(c *gin.Context) {
 
 func (dbc *UserController) SendPasswordResetCode(c *gin.Context) {
 	var sendOtp dto.SendOtpDto
-	var user bool
+	var user database.User
 
 	if err := c.ShouldBind(&sendOtp); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -173,23 +173,22 @@ func (dbc *UserController) SendPasswordResetCode(c *gin.Context) {
 		return
 	}
 
-	err := dbc.Db.Model(database.User{}).Where("email = ?", sendOtp.Email).First(&user).Error
-	if err != nil {
+	if err := dbc.Db.Where("email = ?", sendOtp.Email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
-		})
-		return
-	}
-	if !user {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": fmt.Sprintf("User %s not found", sendOtp.Email),
 		})
 		return
 	}
 
 	otpCode := otp.Generate()
 	otp.StoreOTP(sendOtp.Email, otpCode)
-	err = otp.SendOtp(sendOtp.Email, otpCode)
+	err := otp.SendOtp(sendOtp.Email, otpCode)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -203,7 +202,7 @@ func (dbc *UserController) SendPasswordResetCode(c *gin.Context) {
 
 func (dbc *UserController) OtpCheck(c *gin.Context) {
 	var resetWithOtp dto.ResetPasswordWithCodeDto
-	var user bool
+	var user database.User
 
 	if err := c.ShouldBind(&resetWithOtp); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -212,16 +211,15 @@ func (dbc *UserController) OtpCheck(c *gin.Context) {
 		return
 	}
 
-	err := dbc.Db.Model(database.User{}).Where("email = ?", resetWithOtp.Email).First(&user).Error
-	if err != nil {
+	if err := dbc.Db.Where("email = ?", resetWithOtp.Email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
-		})
-		return
-	}
-	if !user {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": fmt.Sprintf("User %s not found", resetWithOtp.Email),
 		})
 		return
 	}

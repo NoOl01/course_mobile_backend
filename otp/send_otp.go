@@ -15,11 +15,11 @@ func SendOtp(email string, otp int) error {
 
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	message := []byte(fmt.Sprintf(`Subject: Ваш код подтверждения
-		MIME-Version: 1.0
-		Content-Type: text/html; charset="UTF-8"
-		
-		<!DOCTYPE html>
+	message := []byte(fmt.Sprintf("Subject: Ваш код подтверждения\r\n"+
+		"MIME-Version: 1.0\r\n"+
+		"Content-Type: text/html; charset=\"UTF-8\"\r\n"+
+		"\r\n"+
+		`<!DOCTYPE html>
 		<html>
 		<head>
 			<style>
@@ -42,7 +42,7 @@ func SendOtp(email string, otp int) error {
 		        .code {
 		            font-size: 32px;
 		            font-weight: bold;
-		            color: #2B2B2B;
+		            color: #D8D8D8;
 		            background-color: #48B2E7;
 		            padding: 10px 20px;
 		            display: inline-block;

@@ -276,7 +276,71 @@ func (dbc *UserController) ResetPassword(c *gin.Context) {
 }
 
 func (dbc *UserController) UpdateProfile(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "unauthorized",
+		})
+		return
+	}
 
+	token := strings.Split(authHeader, " ")[1]
+	claims, err := common.DecodeToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	id, err := common.GetIdFromToken(claims)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
+
+	var profile dto.ProfileDto
+	if err := c.ShouldBind(&profile); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	var user database.User
+
+	updates := map[string]interface{}{
+		"first_name": profile.FirstName,
+		"last_name":  profile.LastName,
+		"address":    profile.Address,
+		"email":      profile.Email,
+	}
+
+	if err := dbc.Db.Model(&user).Where("id = ?", id).Updates(updates).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"result": nil,
+				"error":  "User not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": user,
+		"error":  nil,
+	})
 }
 
 func (dbc *UserController) UpdateProfileAvatar(c *gin.Context) {

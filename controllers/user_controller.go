@@ -4,7 +4,6 @@ import (
 	"backend_course/common"
 	"backend_course/database"
 	"backend_course/dto"
-	"backend_course/images"
 	"backend_course/otp"
 	"errors"
 	"fmt"
@@ -337,6 +336,16 @@ func (dbc *UserController) UpdateProfile(c *gin.Context) {
 		return
 	}
 
+	if err := dbc.Db.First(&user, id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	user.Avatar = "/" + strings.ReplaceAll(user.Avatar, "\\", "/")
+
 	c.JSON(http.StatusOK, gin.H{
 		"result": user,
 		"error":  nil,
@@ -453,10 +462,7 @@ func (dbc *UserController) GetProfileInfo(c *gin.Context) {
 		return
 	}
 
-	avatar := images.FindAvatar(id)
-	if avatar != "" {
-		user.Avatar = "/avatars/" + avatar
-	}
+	user.Avatar = "/" + strings.ReplaceAll(user.Avatar, "\\", "/")
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": user,

@@ -1,9 +1,7 @@
 package images
 
 import (
-	"fmt"
 	"os"
-	"path/filepath"
 )
 
 func CheckFolder(filename string) {
@@ -18,15 +16,4 @@ func CreateFolder(fileName string) {
 	if err != nil {
 		return
 	}
-}
-
-func FindAvatar(id int64) string {
-	filename := fmt.Sprintf("avatar_%d.png", id)
-	avatarPath := filepath.Join("./upload/avatars", filename)
-
-	if _, err := os.Stat(avatarPath); err == nil {
-		// Возвращаем только имя файла
-		return filename
-	}
-	return ""
 }

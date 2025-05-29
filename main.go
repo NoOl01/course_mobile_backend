@@ -22,8 +22,8 @@ func main() {
 	r := gin.Default()
 	db := database.Connect()
 
-	r.Static("/products", "./upload/products")
-	r.Static("/avatars", "./upload/avatars")
+	r.Static("/upload/products", "./upload/products")
+	r.Static("/upload/avatars", "./upload/avatars")
 
 	r.Use(cors.Default())
 	router.AppRouter(r, db)

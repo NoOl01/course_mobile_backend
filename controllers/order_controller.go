@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -40,7 +39,14 @@ func (dbc *OrderController) GetAllOrders(c *gin.Context) {
 
 	var orders []database.Order
 
-	id := common.GetIdFromToken(claims)
+	id, err := common.GetIdFromToken(claims)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
 
 	if err := dbc.Db.Where("UserId = ?", id).Find(&orders).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -92,7 +98,7 @@ func (dbc *OrderController) BuyProduct(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseInt(common.GetIdFromToken(claims), 10, 64)
+	id, err := common.GetIdFromToken(claims)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"result": nil,

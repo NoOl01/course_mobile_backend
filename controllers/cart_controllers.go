@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -37,7 +36,14 @@ func (dbc *CartController) GetAllCart(c *gin.Context) {
 	}
 
 	var cart database.Cart
-	id := common.GetIdFromToken(claims)
+	id, err := common.GetIdFromToken(claims)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
 
 	if err := dbc.Db.Where("id = ?", id).Find(&cart).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -86,7 +92,7 @@ func (dbc *CartController) AddToCart(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseInt(common.GetIdFromToken(claims), 10, 64)
+	id, err := common.GetIdFromToken(claims)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "invalid token",
@@ -127,7 +133,14 @@ func (dbc *CartController) DeleteFromCart(c *gin.Context) {
 		})
 		return
 	}
-	id := common.GetIdFromToken(claims)
+	id, err := common.GetIdFromToken(claims)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
 
 	if err := dbc.Db.Where("id = ?", id).Delete(&database.Cart{}).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

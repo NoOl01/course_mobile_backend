@@ -20,6 +20,8 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 			user.POST("/checkOtp", userController.OtpCheck)
 			user.POST("/resetPassword", userController.ResetPassword)
 			user.POST("/updateProfile", userController.UpdateProfile)
+			user.POST("/updateProfileAvatar", userController.UpdateProfileAvatar)
+			user.GET("/getInfo", userController.GetProfileInfo)
 		}
 		product := api.Group("/product")
 		{

@@ -2,6 +2,7 @@ package common
 
 import (
 	"backend_course/database"
+	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"os"
@@ -80,10 +81,12 @@ func DecodeToken(tokenString string) (jwt.MapClaims, error) {
 	return nil, err
 }
 
-func GetIdFromToken(claims jwt.MapClaims) string {
-	id, idOk := claims["Id"].(string)
-	if !idOk {
-		return ""
+func GetIdFromToken(claims jwt.MapClaims) (int64, error) {
+	if idFloat, ok := claims["Id"].(float64); ok {
+		return int64(idFloat), nil
 	}
-	return id
+	if idFloat, ok := claims["id"].(float64); ok {
+		return int64(idFloat), nil
+	}
+	return 0, errors.New("id not found in token")
 }

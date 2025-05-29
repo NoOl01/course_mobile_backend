@@ -4,13 +4,14 @@ import (
 	"backend_course/common"
 	"backend_course/database"
 	"backend_course/dto"
+	"backend_course/images"
 	"backend_course/otp"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"strconv"
+	"path/filepath"
 	"strings"
 )
 
@@ -137,7 +138,7 @@ func (dbc *UserController) RefreshToken(c *gin.Context) {
 		})
 		return
 	}
-	id, err := strconv.ParseInt(common.GetIdFromToken(claims), 10, 64)
+	id, err := common.GetIdFromToken(claims)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"result": nil,
@@ -276,4 +277,125 @@ func (dbc *UserController) ResetPassword(c *gin.Context) {
 
 func (dbc *UserController) UpdateProfile(c *gin.Context) {
 
+}
+
+func (dbc *UserController) UpdateProfileAvatar(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "unauthorized",
+		})
+		return
+	}
+
+	token := strings.Split(authHeader, " ")[1]
+	claims, err := common.DecodeToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	id, err := common.GetIdFromToken(claims)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
+
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	savePath := filepath.Join("upload/avatars", filepath.Base(fmt.Sprintf("avatar_%d%s", id, filepath.Ext(file.Filename))))
+
+	if err := dbc.Db.Model(&database.User{}).Where("id = ?", id).Update("avatar", savePath).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "User not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": nil,
+	})
+}
+
+func (dbc *UserController) GetProfileInfo(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "unauthorized",
+		})
+		return
+	}
+
+	token := strings.Split(authHeader, " ")[1]
+	claims, err := common.DecodeToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	id, err := common.GetIdFromToken(claims)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"result": nil,
+			"error":  "invalid token",
+		})
+		return
+	}
+
+	var user database.User
+
+	if err := dbc.Db.Model(&user).Where("id = ?", id).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"result": nil,
+				"error":  fmt.Sprintf("User not found"),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	avatar := images.FindAvatar(id)
+	if avatar != "" {
+		user.Avatar = "/avatars/" + avatar
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": user,
+		"error":  nil,
+	})
 }

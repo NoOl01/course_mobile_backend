@@ -43,6 +43,7 @@ type Product struct {
 	Brand       Brand          `gorm:"foreignKey:BrandId" json:"brand,omitempty"`
 	Images      []ProductImage `gorm:"foreignKey:ProductId" json:"images,omitempty"`
 	Carts       []Cart         `gorm:"foreignKey:ProductId" json:"product,omitempty"`
+	Favorites   []Favorite     `gorm:"foreignKey:ProductId" json:"favorites,omitempty"`
 	Orders      []Order        `gorm:"foreignKey:ProductId" json:"order,omitempty"`
 }
 
@@ -62,6 +63,14 @@ type Cart struct {
 	Count     int     `gorm:"not null" json:"count,omitempty"`
 }
 
+type Favorite struct {
+	Id        int64   `gorm:"primary_key;auto_increment" json:"id,omitempty"`
+	UserId    int64   `gorm:"not null" json:"user_id,omitempty"`
+	User      User    `gorm:"foreignKey:UserId" json:"user,omitempty"`
+	ProductId int64   `gorm:"not null" json:"product_id,omitempty"`
+	Product   Product `gorm:"foreignKey:ProductId" json:"product,omitempty"`
+}
+
 type Order struct {
 	Id        int64     `gorm:"primary_key;auto_increment" json:"id,omitempty"`
 	UserId    int64     `gorm:"not null" json:"user_id,omitempty"`
@@ -74,9 +83,10 @@ type Order struct {
 }
 
 type Notification struct {
-	Id          int64  `gorm:"primary_key;auto_increment" json:"id,omitempty"`
-	Title       string `gorm:"size:255;not null" json:"title,omitempty"`
-	Description string `gorm:"size:255;not null" json:"description,omitempty"`
-	UserId      int64  `gorm:"not null" json:"user_id,omitempty"`
-	User        User   `gorm:"foreignKey:UserId" json:"user,omitempty"`
+	Id          int64     `gorm:"primary_key;auto_increment" json:"id,omitempty"`
+	Title       string    `gorm:"size:255;not null" json:"title,omitempty"`
+	Description string    `gorm:"size:255;not null" json:"description,omitempty"`
+	UserId      int64     `gorm:"not null" json:"user_id,omitempty"`
+	User        User      `gorm:"foreignKey:UserId" json:"-"`
+	DateTime    time.Time `gorm:"type:DATETIME;not null" json:"date_time,omitempty"`
 }

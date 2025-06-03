@@ -52,5 +52,10 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 			cart.POST("/add", cartController.AddToCart)
 			cart.POST("/delete", cartController.DeleteFromCart)
 		}
+		notification := api.Group("/notification")
+		{
+			notificationController := controllers.NotificationController{Db: db}
+			notification.GET("/getAll", notificationController.GetAllNotifications)
+		}
 	}
 }

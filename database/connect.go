@@ -8,14 +8,14 @@ import (
 )
 
 func Connect() *gorm.DB {
-	dsn := os.Getenv("DATABASE_URL")
+	dsn := os.Getenv("DATABASE_URL") + "?parseTime=true"
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Panicf("Error connecting to database. %s\n", err.Error())
 	}
 
-	autoMigrateErr := db.AutoMigrate(&User{}, &Category{}, &Brand{}, &Product{}, &ProductImage{}, &Cart{}, &Order{}, &Notification{})
+	autoMigrateErr := db.AutoMigrate(&User{}, &Category{}, &Brand{}, &Product{}, &ProductImage{}, &Cart{}, &Favorite{}, &Order{}, &Notification{})
 	if autoMigrateErr != nil {
 		log.Panicf("Error running migrations. %s\n", autoMigrateErr.Error())
 	}

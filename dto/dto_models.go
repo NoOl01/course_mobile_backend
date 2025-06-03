@@ -41,3 +41,26 @@ type BuyProductDto struct {
 	ProductId int64 `json:"product_id"`
 	Count     int   `json:"count"`
 }
+
+type ProductWithImageResult struct {
+	Id         int64   `json:"id"`
+	Name       string  `json:"name"`
+	Price      float64 `json:"price"`
+	CategoryId int64   `json:"category_id"`
+	BrandId    int64   `json:"brand_id"`
+	Image      string  `json:"image"`
+	IsLiked    bool    `json:"is_liked"`
+	InCart     bool    `json:"in_cart"`
+}
+
+type ProductInfoResult struct {
+	Id          int64    `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Price       float64  `json:"price"`
+	Category    string   `json:"category"`
+	Brand       string   `json:"brand"`
+	Images      []string `json:"image"`
+	IsLiked     bool     `json:"is_liked"`
+	InCart      bool     `json:"in_cart"`
+}

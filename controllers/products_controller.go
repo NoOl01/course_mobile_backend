@@ -44,7 +44,7 @@ func (dbc *ProductController) GetAllProducts(c *gin.Context) {
 	}
 
 	var products []database.Product
-	if err := dbc.Db.Preload("Images").Preload("Carts").Preload("Favorites").Find(&products).Error; err != nil {
+	if err := dbc.Db.Preload("Images").Preload("Carts").Preload("Favourites").Find(&products).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"result": nil,
 			"error":  err.Error(),
@@ -68,7 +68,7 @@ func (dbc *ProductController) GetAllProducts(c *gin.Context) {
 		}
 
 		isLiked := false
-		for _, fav := range p.Favorites {
+		for _, fav := range p.Favourites {
 			if fav.UserId == id {
 				isLiked = true
 				break
@@ -132,7 +132,7 @@ func (dbc *ProductController) GetProductByCategoryId(c *gin.Context) {
 	}
 
 	var products []database.Product
-	if err := dbc.Db.Preload("Images").Preload("Carts").Preload("Favorites").Where("category_id = ?", categoryId).
+	if err := dbc.Db.Preload("Images").Preload("Carts").Preload("Favourites").Where("category_id = ?", categoryId).
 		Find(&products).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"result": nil,
@@ -157,7 +157,7 @@ func (dbc *ProductController) GetProductByCategoryId(c *gin.Context) {
 		}
 
 		isLiked := false
-		for _, fav := range p.Favorites {
+		for _, fav := range p.Favourites {
 			if fav.UserId == id {
 				isLiked = true
 				break
@@ -224,7 +224,7 @@ func (dbc *ProductController) GetProductInfoById(c *gin.Context) {
 	err = dbc.Db.
 		Preload("Images").
 		Preload("Carts").
-		Preload("Favorites").
+		Preload("Favourites").
 		Preload("Category").
 		Preload("Brand").
 		First(&product, productId).Error
@@ -248,7 +248,7 @@ func (dbc *ProductController) GetProductInfoById(c *gin.Context) {
 	}
 
 	isLiked := false
-	for _, fav := range product.Favorites {
+	for _, fav := range product.Favourites {
 		if fav.UserId == id {
 			isLiked = true
 			break

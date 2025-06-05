@@ -43,7 +43,7 @@ type Product struct {
 	Brand       Brand          `gorm:"foreignKey:BrandId" json:"brand,omitempty"`
 	Images      []ProductImage `gorm:"foreignKey:ProductId" json:"images,omitempty"`
 	Carts       []Cart         `gorm:"foreignKey:ProductId" json:"product,omitempty"`
-	Favorites   []Favorite     `gorm:"foreignKey:ProductId" json:"favorites,omitempty"`
+	Favourites  []Favourite    `gorm:"foreignKey:ProductId" json:"favorites,omitempty"`
 	Orders      []Order        `gorm:"foreignKey:ProductId" json:"order,omitempty"`
 }
 
@@ -63,7 +63,7 @@ type Cart struct {
 	Count     int     `gorm:"not null" json:"count,omitempty"`
 }
 
-type Favorite struct {
+type Favourite struct {
 	Id        int64   `gorm:"primary_key;auto_increment" json:"id,omitempty"`
 	UserId    int64   `gorm:"not null" json:"user_id,omitempty"`
 	User      User    `gorm:"foreignKey:UserId" json:"user,omitempty"`

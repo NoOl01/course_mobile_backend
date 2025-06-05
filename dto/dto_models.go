@@ -53,6 +53,16 @@ type ProductWithImageResult struct {
 	InCart     bool    `json:"in_cart"`
 }
 
+type ProductWithCount struct {
+	Id      int64   `json:"id"`
+	Name    string  `json:"name"`
+	Price   float64 `json:"price"`
+	Image   string  `json:"image"`
+	IsLiked bool    `json:"is_liked"`
+	InCart  bool    `json:"in_cart"`
+	Count   int     `json:"count"`
+}
+
 type ProductInfoResult struct {
 	Id          int64    `json:"id"`
 	Name        string   `json:"name"`

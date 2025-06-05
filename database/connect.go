@@ -15,7 +15,7 @@ func Connect() *gorm.DB {
 		log.Panicf("Error connecting to database. %s\n", err.Error())
 	}
 
-	autoMigrateErr := db.AutoMigrate(&User{}, &Category{}, &Brand{}, &Product{}, &ProductImage{}, &Cart{}, &Favorite{}, &Order{}, &Notification{})
+	autoMigrateErr := db.AutoMigrate(&User{}, &Category{}, &Brand{}, &Product{}, &ProductImage{}, &Cart{}, &Favourite{}, &Order{}, &Notification{})
 	if autoMigrateErr != nil {
 		log.Panicf("Error running migrations. %s\n", autoMigrateErr.Error())
 	}

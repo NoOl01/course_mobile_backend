@@ -51,11 +51,20 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 			cart.GET("/getAll", cartController.GetAllCart)
 			cart.POST("/add", cartController.AddToCart)
 			cart.POST("/delete", cartController.DeleteFromCart)
+			cart.POST("/updateCount", cartController.UpdateProductsCount)
 		}
 		notification := api.Group("/notification")
 		{
 			notificationController := controllers.NotificationController{Db: db}
 			notification.GET("/getAll", notificationController.GetAllNotifications)
+		}
+		favourite := api.Group("/favourite")
+		{
+			favouriteController := controllers.FavouriteController{Db: db}
+
+			favourite.POST("/add", favouriteController.AddToFavourite)
+			favourite.POST("/delete", favouriteController.DeleteFromFavourite)
+			favourite.GET("/getAll", favouriteController.GetAllFavouriteProducts)
 		}
 	}
 }

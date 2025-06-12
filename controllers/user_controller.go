@@ -29,9 +29,23 @@ func (dbc *UserController) Register(c *gin.Context) {
 		return
 	}
 
+	var existingUser database.User
+	if err := dbc.Db.Where("email = ?", newUser.Email).First(&existingUser).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{
+			"result": nil,
+			"error":  "User already exists",
+		})
+		return
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"result": nil,
+			"error":  err.Error(),
+		})
+		return
+	}
+
 	hash := common.Encrypt(newUser.Password)
 	user := database.User{
-
 		FirstName: newUser.FirstName,
 		Email:     newUser.Email,
 		Password:  hash,
@@ -206,7 +220,8 @@ func (dbc *UserController) OtpCheck(c *gin.Context) {
 
 	if err := c.ShouldBind(&resetWithOtp); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"result": nil,
+			"error":  err.Error(),
 		})
 		return
 	}
@@ -214,12 +229,14 @@ func (dbc *UserController) OtpCheck(c *gin.Context) {
 	if err := dbc.Db.Where("email = ?", resetWithOtp.Email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
+				"result": nil,
+				"error":  err.Error(),
 			})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+			"result": nil,
+			"error":  err.Error(),
 		})
 		return
 	}
@@ -227,12 +244,17 @@ func (dbc *UserController) OtpCheck(c *gin.Context) {
 	isVerified := otp.VerifyOTP(resetWithOtp.Email, resetWithOtp.Code)
 	if !isVerified {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "wrong otp code",
+			"result": nil,
+			"error":  "wrong otp code",
 		})
 		return
 	}
+
+	token := common.StoreToken(resetWithOtp.Email)
+
 	c.JSON(http.StatusOK, gin.H{
-		"error": nil,
+		"result": token,
+		"error":  nil,
 	})
 }
 
@@ -243,6 +265,13 @@ func (dbc *UserController) ResetPassword(c *gin.Context) {
 	if err := c.ShouldBind(&resetPassword); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
+		})
+		return
+	}
+
+	if !common.VerifyToken(resetPassword.Email, resetPassword.Token) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid token",
 		})
 		return
 	}

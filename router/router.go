@@ -66,5 +66,11 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 			favourite.POST("/delete", favouriteController.DeleteFromFavourite)
 			favourite.GET("/getAll", favouriteController.GetAllFavouriteProducts)
 		}
+		settings := api.Group("/settings")
+		{
+			settingsController := controllers.SettingsController{Db: db}
+
+			settings.POST("/moneyAction", settingsController.MoneyAction)
+		}
 	}
 }

@@ -12,5 +12,10 @@ var (
 // Results
 const (
 	ResultAwaitingPayment = "Ожидает оплаты"
-	ResultOk              = "Оплачен"
+	ResultPaid            = "Оплачен"
+	ResultCanceled        = "Отменен"
+	ResultOnTheWay        = "В пути"
+	ResultSortingCenter   = "В сортировочном центре"
+	ResultSentForDelivery = "Передано в доставку"
+	ResultReceived        = "Получено"
 )

@@ -11,7 +11,7 @@ type User struct {
 	Avatar        string         `gorm:"size:255" json:"avatar"`
 	Address       string         `gorm:"size:255" json:"address"`
 	Balance       float64        `gorm:"size:255;not null" json:"balance"`
-	Email         string         `gorm:"size:255;not null" json:"email"`
+	Email         string         `gorm:"size:255;not null;unique" json:"email"`
 	Password      string         `gorm:"size:255;not null" json:"-"`
 	Cards         []Cart         `gorm:"foreignKey:UserId" json:"user,omitempty"`
 	Orders        []Order        `gorm:"foreignKey:UserId" json:"orders,omitempty"`
@@ -78,6 +78,7 @@ type Order struct {
 	ProductId int64     `gorm:"not null" json:"product_id,omitempty"`
 	Product   Product   `gorm:"foreignKey:ProductId" json:"product,omitempty"`
 	Count     int       `gorm:"not null" json:"count,omitempty"`
+	Price     float64   `gorm:"not null" json:"price,omitempty"`
 	Status    string    `gorm:"not null" json:"status,omitempty"`
 	Time      time.Time `gorm:"not null" json:"time,omitempty"`
 }

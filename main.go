@@ -28,7 +28,7 @@ func main() {
 	r.Use(cors.Default())
 	router.AppRouter(r, db)
 
-	if err := r.Run(":8080"); err != nil {
+	if err := r.Run("0.0.0.0:8080"); err != nil {
 		log.Panicf("Error starting server. %s\n", err.Error())
 	}
 }

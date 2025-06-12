@@ -17,6 +17,7 @@ type SendOtpDto struct {
 
 type ResetPasswordDto struct {
 	Email    string `json:"email"`
+	Token    string `json:"token"`
 	Password string `json:"password"`
 }
 
@@ -73,4 +74,9 @@ type ProductInfoResult struct {
 	Images      []string `json:"image"`
 	IsLiked     bool     `json:"is_liked"`
 	InCart      bool     `json:"in_cart"`
+}
+
+type SettingMoneyAction struct {
+	Action string  `json:"action"`
+	Money  float64 `json:"money"`
 }

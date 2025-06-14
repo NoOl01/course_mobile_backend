@@ -4,6 +4,7 @@ import (
 	"backend_course/database"
 	"backend_course/images"
 	"backend_course/router"
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -19,6 +20,8 @@ func main() {
 	images.CheckFolder("./upload/products")
 	images.CheckFolder("./upload/avatars")
 
+	gin.SetMode(gin.ReleaseMode)
+
 	r := gin.Default()
 	db := database.Connect()
 
@@ -28,6 +31,7 @@ func main() {
 	r.Use(cors.Default())
 	router.AppRouter(r, db)
 
+	fmt.Println("Server started")
 	if err := r.Run("0.0.0.0:8080"); err != nil {
 		log.Panicf("Error starting server. %s\n", err.Error())
 	}

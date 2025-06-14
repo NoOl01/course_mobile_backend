@@ -48,19 +48,25 @@ func (dbc *OrderController) GetAllOrders(c *gin.Context) {
 		return
 	}
 
-	if err := dbc.Db.Where("UserId = ?", id).Find(&orders).Error; err != nil {
+	if err := dbc.Db.
+		Where("user_id = ?", id).
+		Preload("Product.Brand").
+		Preload("Product.Images").
+		Preload("Product").
+		Find(&orders).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"result": nil,
-				"error":  err.Error(),
-			})
+			c.JSON(http.StatusNotFound, gin.H{"result": nil, "error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"result": nil,
-			"error":  err.Error(),
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"result": nil, "error": err.Error()})
 		return
+	}
+
+	for i := range orders {
+		if len(orders[i].Product.Images) > 1 {
+			orders[i].Product.Images = orders[i].Product.Images[:1]
+		}
+		orders[i].Product.Images[0].FilePath = strings.ReplaceAll(orders[i].Product.Images[0].FilePath, "\\", "/")
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -69,7 +75,7 @@ func (dbc *OrderController) GetAllOrders(c *gin.Context) {
 	})
 }
 
-func (dbc *OrderController) GetProductInfo(c *gin.Context) {
+func (dbc *OrderController) GetOrderInfo(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -117,20 +123,22 @@ func (dbc *OrderController) GetProductInfo(c *gin.Context) {
 	}
 
 	var order database.Order
-	if err := dbc.Db.Where("id = ?", id).First(&order).Error; err != nil {
+	if err := dbc.Db.
+		Where("user_id = ?", id).
+		Preload("Product.Brand").
+		Preload("Product.Images").
+		Preload("Product").
+		First(&order).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"result": nil,
-				"error":  "order not found",
-			})
+			c.JSON(http.StatusNotFound, gin.H{"result": nil, "error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"result": nil,
-			"error":  err.Error(),
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"result": nil, "error": err.Error()})
 		return
 	}
+
+	order.Product.Images = order.Product.Images[:1]
+	order.Product.Images[0].FilePath = strings.ReplaceAll(order.Product.Images[0].FilePath, "\\", "/")
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": order,

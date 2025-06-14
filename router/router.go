@@ -36,6 +36,7 @@ func AppRouter(r *gin.Engine, db *gorm.DB) {
 			orderController := controllers.OrderController{Db: db}
 
 			order.GET("/getAll", orderController.GetAllOrders)
+			order.GET("/getById", orderController.GetOrderInfo)
 			order.POST("/buy", orderController.BuyProduct)
 		}
 		category := api.Group("category")
